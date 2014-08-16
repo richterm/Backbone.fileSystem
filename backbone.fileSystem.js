@@ -2,7 +2,7 @@
  * Backbone fileSystem Adapter
  * Version 0.1
  *
- * https://github.com/scotthovestadt
+ * https://github.com/richterm
  */
 (function (root, factory) {
    if (typeof define === "function" && define.amd) {
@@ -22,7 +22,7 @@
 Backbone.FileSystem = window.Store = function(name) {
   this.name = name;
   // TODO: Take "quota" and "type" -- https://developers.google.com/chrome/whitepapers/storage
-}
+};
 
 // Generate four random hex digits.
 function S4() {
@@ -39,9 +39,10 @@ function guid() {
 // Directory entries are cached on var dirEntry. The cached value is returned if present.
 var dirEntry = {};
 function getDirectoryEntry(directory) {
+  var size = 10 * 1024 * 1024;
   var Deferred = $.Deferred();
   if(dirEntry[directory] === undefined) {
-    window.webkitStorageInfo.requestQuota(PERSISTENT, 1024*1024, function(grantedBytes) {
+    window.webkitStorageInfo.requestQuota(PERSISTENT, size, function(grantedBytes) {
       window.webkitRequestFileSystem(PERSISTENT, grantedBytes, function(fs) {
         fs.root.getDirectory(directory, {create: true, exclusive: false}, function(de) {
           dirEntry[directory] = de;
@@ -77,13 +78,13 @@ function getModel(id, directory) {
           } else {
             Deferred.reject(ex);
           }
-        }
+        };
         reader.onerror = Deferred.reject;
         reader.readAsText(file);
       });
     });
   }).fail(Deferred.reject);
-  return Deferred.promise(); 
+  return Deferred.promise();
 }
 
 // Get all model JSON in array
@@ -121,7 +122,7 @@ function saveModel(model, directory) {
       fileEntry.createWriter(function(fileWriter) {
         fileWriter.onwriteend = function() {
           Deferred.resolve(model);
-        }
+        };
         fileWriter.onerror = Deferred.reject;
         var json = JSON.stringify(model, null, 2); // Forcing it not to be one very long line seems to reduce instances of cache corruption
         var toWrite = new Blob([json], {type: 'text/plain'});
@@ -129,7 +130,7 @@ function saveModel(model, directory) {
       });
     }, Deferred.reject);
   }).fail(Deferred.reject);
-  return Deferred.promise(); 
+  return Deferred.promise();
 }
 
 // Delete model
@@ -208,7 +209,7 @@ Backbone.FileSystem.sync = window.Store.sync = Backbone.localSync = function(met
   // Must fire either success or fail
   if(options && options.success) {
     promise.done(function(resp) {
-      options.success(model, resp, options);
+      options.success(resp);
     });
   }
   if(options && options.error) {
